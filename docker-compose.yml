@@ -1,0 +1,28 @@
+services:
+  alphapose:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: alphapose
+    # Compose v1.29+ / Docker 20.10+ なら gpus キーが使えます
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+    # ↑deploy節は Swarm 用。ローカルの docker compose では下の gpus を優先
+    gpus: all
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - PYTHONUNBUFFERED=1
+      # 必要なら DISPLAY 等を追加
+    working_dir: /build/AlphaPose
+    # ここに手元の入出力をマウント（コード本体はDockerfileでビルド済みのものを使う想定）
+    volumes:
+      - ./:/workspace
+    ipc: host
+    stdin_open: true
+    tty: true
+    # デフォルトはシェル起動にしておく
+    command: ["/bin/bash"]
